@@ -13,3 +13,12 @@ This is a companion application for testing functionalities of
   - Rendering
 - Entity
   - Rendering
+
+## Implemented Projects
+
+1. [CatLikeCoding](https://catlikecoding.com/unity/tutorials/basics/game-objects-and-scripts/)
+![ClockTutorial](docs/ClockTutorial.png)
+The implementation was subpar due to:
+   - Repeated shader usage (Default entity shaders)
+   - Repeated mesh usage (Look into instancing)
+   - Long constructor
