@@ -53,6 +53,9 @@ public class TestingBasicFunctionality extends Application {
                                     oColor = texture2D(render, uv);
                                 }""")
                 .build(), "render");
+        camera.getTransform().setPositionY(2.5f);
+        camera.getTransform().setPositionZ(-2.5f);
+        camera.getTransform().setPitch((float) Math.toRadians(35));
     }
 
     @Override
