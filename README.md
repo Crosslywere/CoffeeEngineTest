@@ -13,6 +13,11 @@ This is a companion application for testing functionalities of
   - Rendering
 - Entity
   - Rendering
+  - Parenting
+- ShaderProgram
+  - Preset Matrix Uniforms
+- Transform
+  - Parenting
 
 ## Implemented Projects
 
