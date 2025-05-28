@@ -3,13 +3,13 @@ package com.test;
 import com.crossly.CoffeeEngine;
 import com.crossly.components.Mesh;
 import com.crossly.components.ShaderProgram;
+import com.crossly.components.subcomponents.Transform;
 import com.crossly.entities.Camera3D;
 import com.crossly.entities.Entity;
 import com.crossly.input.Input;
 import com.crossly.interfaces.Application;
 import com.crossly.timer.Timer;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
 
 public class TestingBasicFunctionality extends Application {
 
@@ -33,9 +33,7 @@ public class TestingBasicFunctionality extends Application {
         shader.setFloat3("uColor", 1, 1, 1);
         Mesh.Buffer mesh = Mesh.Buffer.create("models/Queen.obj");
         entity = new Entity(shader, mesh);
-        entity.getTransform().setPosition(new Vector3f(0, 1, 0));
         camera = new Camera3D(getWindowWidth(), getWindowHeight());
-        camera.getTransform().reset();
         camera.setScreenShader(ShaderProgram.builder()
                         .attachVertexShader("""
                                 #version 330 core
@@ -48,7 +46,7 @@ public class TestingBasicFunctionality extends Application {
                                 layout (location = 0) out vec4 oColor;
                                 uniform sampler2D render;
                                 uniform vec2 resolution;
-                                #define PIXEL_SIZE 1.0
+                                #define PIXEL_SIZE 2.0
                                 void main() {
                                     vec2 uv = floor(gl_FragCoord.xy / PIXEL_SIZE) * PIXEL_SIZE;
                                     uv /= resolution;
@@ -61,38 +59,38 @@ public class TestingBasicFunctionality extends Application {
     public void onUpdate(Input input) {
         if (input.isKeyPressed(Input.KEY_ESCAPE)) quit();
         if (input.isKeyJustPressed(Input.KEY_F)) setFullscreen(!getFullscreen());
+        // Moving the camera based on
         if (input.isKeyPressed(Input.KEY_W))
-            camera.getTransform().incrementPosition(camera.getTransform().getForward().mul(Timer.getDeltaTime()));
+            camera.getTransform().incrementPosition(camera.getTransform().getFront().mul(Timer.getDeltaTime()));
         if (input.isKeyPressed(Input.KEY_S))
-            camera.getTransform().incrementPosition(camera.getTransform().getForward().mul(-Timer.getDeltaTime()));
+            camera.getTransform().incrementPosition(camera.getTransform().getFront().mul(-Timer.getDeltaTime()));
         if (input.isKeyPressed(Input.KEY_A))
             camera.getTransform().incrementPosition(camera.getTransform().getRight().mul(-Timer.getDeltaTime()));
         if (input.isKeyPressed(Input.KEY_D))
             camera.getTransform().incrementPosition(camera.getTransform().getRight().mul(Timer.getDeltaTime()));
 
         if (input.isKeyPressed(Input.KEY_SPACE))
-            camera.getTransform().incrementPosition(new Vector3f(0, 1, 0).mul(Timer.getDeltaTime()));
+            camera.getTransform().incrementPosition(Transform.getWorldUp().mul(Timer.getDeltaTime()));
         if (input.isKeyPressed(Input.KEY_LEFT_CTRL))
-            camera.getTransform().incrementPosition(new Vector3f(0,-1, 0).mul(Timer.getDeltaTime()));
+            camera.getTransform().incrementPosition(Transform.getWorldUp().mul(-Timer.getDeltaTime()));
 
-        if (input.isKeyPressed(Input.KEY_I))
-            camera.getTransform().incrementRotation(new Vector3f(1, 0, 0).mul(-Timer.getDeltaTime()));
-        if (input.isKeyPressed(Input.KEY_K))
-            camera.getTransform().incrementRotation(new Vector3f(1, 0, 0).mul(Timer.getDeltaTime()));
-        if (input.isKeyPressed(Input.KEY_J))
-            camera.getTransform().incrementRotation(new Vector3f(0, 1, 0).mul(Timer.getDeltaTime()));
-        if (input.isKeyPressed(Input.KEY_L))
-            camera.getTransform().incrementRotation(new Vector3f(0, 1, 0).mul(-Timer.getDeltaTime()));
+        // Orienting the camera's roll
+        if (input.isScrollDown())
+            camera.getTransform().setRoll(camera.getTransform().getRoll() + Timer.getDeltaTime());
+        if (input.isScrollUp())
+            camera.getTransform().setRoll(camera.getTransform().getRoll() - Timer.getDeltaTime());
 
+        // Orienting the camera's pitch and yaw
         if (input.isButtonPressed(Input.MOUSE_BUTTON_LEFT)) {
             var mousePos = input.getMousePos();
             if (mouseFirst) {
                 mousePosLast = input.getMousePos();
                 mouseFirst = false;
             }
-            float xoffset = mousePos.x() - mousePosLast.x();
-            float yoffset = mousePosLast.y() - mousePos.y();
-            camera.getTransform().incrementRotation(new Vector3f(yoffset, xoffset, 0).mul(Timer.getDeltaTime() * .05f));
+            float xoffset = mousePosLast.x() - mousePos.x();
+            float yoffset = mousePos.y() - mousePosLast.y();
+            camera.getTransform().setPitch(Math.clamp(camera.getTransform().getPitch() + (yoffset * Timer.getDeltaTime() * .05f), -CLAMP_CAM, CLAMP_CAM));
+            camera.getTransform().setYaw(camera.getTransform().getYaw() + (xoffset * Timer.getDeltaTime() * .05f));
             mousePosLast = input.getMousePos();
             input.disableMouse();
         }
@@ -100,11 +98,6 @@ public class TestingBasicFunctionality extends Application {
             mouseFirst = true;
             input.normalMouse();
         }
-
-        if (input.isKeyJustPressed(Input.KEY_T)) {
-            System.out.println(camera.getTransform().getForward());
-        }
-        camera.getTransform().getRotation().x = Math.clamp(camera.getTransform().getRotation().x(), -CLAMP_CAM, CLAMP_CAM);
     }
 
     @Override
