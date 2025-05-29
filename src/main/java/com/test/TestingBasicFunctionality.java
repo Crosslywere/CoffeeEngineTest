@@ -1,7 +1,7 @@
 package com.test;
 
 import com.crossly.CoffeeEngine;
-import com.crossly.components.Mesh;
+import com.crossly.components.Model;
 import com.crossly.components.ShaderProgram;
 import com.crossly.components.subcomponents.Transform;
 import com.crossly.entities.Camera3D;
@@ -31,7 +31,7 @@ public class TestingBasicFunctionality extends Application {
                 .build();
         shader.use();
         shader.setFloat3("uColor", 1, 1, 1);
-        Mesh.Object mesh = Mesh.Object.load("models/Queen.obj");
+        Model mesh = new Model("models/Queen.obj");
         entity = new Entity(shader, mesh);
         camera = new Camera3D(getWindowWidth(), getWindowHeight());
         camera.setScreenShader(ShaderProgram.builder()
