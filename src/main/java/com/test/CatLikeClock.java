@@ -35,7 +35,7 @@ public class CatLikeClock extends Application {
                 .build();
         faceShader.use();
         faceShader.setFloat3("color", new Vector3f(1));
-        Mesh.Buffer faceMesh = Mesh.Buffer.create("models/Cylinder.obj");
+        Mesh.Object faceMesh = Mesh.Object.load("models/Cylinder.obj");
         // Clock face creation
         Entity clockFace = new Entity(faceMesh, faceShader);
         clockFace.getTransform().reset();
@@ -53,7 +53,7 @@ public class CatLikeClock extends Application {
                 .build();
         hourIndicatorShader.use();
         hourIndicatorShader.setFloat3("color", new Vector3f(73f / 255));
-        Mesh.Buffer hourIndicatorMesh = Mesh.Buffer.create("models/Cube.obj");
+        Mesh.Object hourIndicatorMesh = Mesh.Object.load("models/Cube.obj");
 
         // Clock hour indicators
         for (int i = 0; i < 12; i++) {

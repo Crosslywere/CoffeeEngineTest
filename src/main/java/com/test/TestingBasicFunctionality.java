@@ -31,7 +31,7 @@ public class TestingBasicFunctionality extends Application {
                 .build();
         shader.use();
         shader.setFloat3("uColor", 1, 1, 1);
-        Mesh.Buffer mesh = Mesh.Buffer.create("models/Queen.obj");
+        Mesh.Object mesh = Mesh.Object.load("models/Queen.obj");
         entity = new Entity(shader, mesh);
         camera = new Camera3D(getWindowWidth(), getWindowHeight());
         camera.setScreenShader(ShaderProgram.builder()
@@ -82,6 +82,8 @@ public class TestingBasicFunctionality extends Application {
             camera.getTransform().setRoll(camera.getTransform().getRoll() + Timer.getDeltaTime());
         if (input.isScrollUp())
             camera.getTransform().setRoll(camera.getTransform().getRoll() - Timer.getDeltaTime());
+        if (input.isButtonJustPressed(Input.MOUSE_BUTTON_MIDDLE))
+            camera.getTransform().setRoll(0);
 
         // Orienting the camera's pitch and yaw
         if (input.isButtonPressed(Input.MOUSE_BUTTON_LEFT)) {
