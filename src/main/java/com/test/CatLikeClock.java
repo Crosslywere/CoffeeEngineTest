@@ -1,6 +1,7 @@
 package com.test;
 
 import com.crossly.CoffeeEngine;
+import com.crossly.components.Framebuffer;
 import com.crossly.components.Model;
 import com.crossly.components.ShaderProgram;
 import com.crossly.entities.Camera3D;
@@ -12,8 +13,6 @@ import org.joml.Vector3f;
 
 import java.sql.Time;
 import java.time.LocalTime;
-
-import static org.lwjgl.opengl.GL11C.glClearColor;
 
 public class CatLikeClock extends Application {
 
@@ -87,7 +86,7 @@ public class CatLikeClock extends Application {
         secondArmPivot = new Entity();
         secondArmPivot.addChild(secondArm);
         clock.addChildren(hourArmPivot, minuteArmPivot, secondArmPivot);
-        glClearColor(0, 0.5f, 1, 1);
+        Framebuffer.setClearColor(0, 0.5f, 1);
     }
 
     @Override
