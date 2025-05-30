@@ -92,7 +92,7 @@ public class CatLikeClock extends Application {
     @Override
     public void onUpdate(Input input) {
         if (input.isKeyPressed(Input.KEY_ESCAPE)) quit();
-        Time now = Time.valueOf(LocalTime.now());
+        Time now = Time.valueOf(LocalTime.now().plusHours(1));
         double seconds = now.getTime() / 1000.0;
         double minutes = seconds / 60;
         double hours = minutes / 60;
