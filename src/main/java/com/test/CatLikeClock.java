@@ -71,17 +71,17 @@ public class CatLikeClock extends Application {
 
         // Clock hands
         Entity hourArm = new ColoredEntity(new Vector3f(), cube, shader);
-        hourArm.getTransform().setPosition(new Vector3f(0, -.25f, -.25f));
+        hourArm.getTransform().setPosition(new Vector3f(0, .75f, -.25f));
         hourArm.getTransform().setScale(new Vector3f(.3f, 2.5f, .1f));
         hourArmPivot = new Entity();
         hourArmPivot.addChild(hourArm);
         Entity minuteArm = new ColoredEntity(new Vector3f(), cube, shader);
-        minuteArm.getTransform().setPosition(new Vector3f(0, -.5f, -.35f));
+        minuteArm.getTransform().setPosition(new Vector3f(0, 1, -.35f));
         minuteArm.getTransform().setScale(new Vector3f(.2f, 4, .1f));
         minuteArmPivot = new Entity();
         minuteArmPivot.addChild(minuteArm);
         Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0),cube, shader);
-        secondArm.getTransform().setPosition(new Vector3f(0, -.75f, -.45f));
+        secondArm.getTransform().setPosition(new Vector3f(0, 1.25f, -.45f));
         secondArm.getTransform().setScale(new Vector3f(.1f, 5, .1f));
         secondArmPivot = new Entity();
         secondArmPivot.addChild(secondArm);
