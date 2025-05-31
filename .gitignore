@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### JAR ###
+src/main/resources/META-INF/MANIFEST.MF
+dependency-reduced-pom.xml
