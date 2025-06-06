@@ -87,6 +87,7 @@ public class CatLikeClock extends Application {
         secondArmPivot.addChild(secondArm);
         clock.addChildren(hourArmPivot, minuteArmPivot, secondArmPivot);
         Framebuffer.setClearColor(0, 0.5f, 1);
+        Framebuffer.enableDepthTest();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.test;
 
 import com.crossly.CoffeeEngine;
+import com.crossly.components.Framebuffer;
 import com.crossly.components.Model;
 import com.crossly.components.ShaderProgram;
 import com.crossly.components.subcomponents.Transform;
@@ -56,6 +57,9 @@ public class TestingBasicFunctionality extends Application {
         camera.getTransform().setPositionY(2.5f);
         camera.getTransform().setPositionZ(-2.5f);
         camera.getTransform().setPitch((float) Math.toRadians(35));
+        Framebuffer.cullBackFaces();
+        Framebuffer.enableDepthTest();
+        Framebuffer.enableBlendFuncOMSA_Add();
     }
 
     @Override
@@ -108,10 +112,12 @@ public class TestingBasicFunctionality extends Application {
     @Override
     public void onRender() {
         camera.makeActive();
+        Framebuffer.drawLines();
         camera.getScreenShader().ifPresent(
                 shader -> shader.setFloat2("resolution", getWindowWidth(), getWindowHeight())
         );
         entity.render();
+        Framebuffer.drawFaces();
         camera.render();
     }
 
