@@ -1,14 +1,9 @@
 package com.test;
 
-import com.crossly.CoffeeEngine;
-import com.crossly.components.Framebuffer;
-import com.crossly.components.Model;
-import com.crossly.components.ShaderProgram;
-import com.crossly.entities.Camera3D;
-import com.crossly.entities.Entity;
-import com.crossly.input.Input;
-import com.crossly.interfaces.Application;
-import com.crossly.interfaces.Component;
+import com.crossly.coffee_engine.component.*;
+import com.crossly.coffee_engine.core.*;
+import com.crossly.coffee_engine.entity.*;
+import com.crossly.util.FileUtil;
 import org.joml.Vector3f;
 
 import java.sql.Time;
@@ -16,129 +11,112 @@ import java.time.LocalTime;
 
 public class CatLikeClock extends Application {
 
-    private final Camera3D camera;
-    private final Entity clock, hourArmPivot, minuteArmPivot, secondArmPivot;
+    private Entity clock;
 
     public CatLikeClock() {
-        super(1280, 720, "CatLikeCoding Clock");
-        camera = new Camera3D(getWindowWidth(), getWindowHeight());
-        camera.getTransform().reset();
-        camera.getTransform().setPosition(new Vector3f(0, 0, -15));
-        clock = new Entity();
-        // Clock face components creation
-        ShaderProgram shader = ShaderProgram.builder()
-                .attachVertexShaderFile("shaders/shader.vert")
-                .attachFragmentShaderFile("shaders/color_shader.frag")
-                .setView("uView")
-                .setProjection("uProjection")
-                .setModel("uModel")
-                .build();
-        var cylinder = new Model("models/Cylinder.obj");
-        // Clock face creation
-        Entity clockFace = new ColoredEntity(new Vector3f(1), cylinder, shader);
-        clockFace.getTransform().reset();
-        clockFace.getTransform().setScale(new Vector3f(10, .2f, 10));
-        clockFace.getTransform().setPitch((float) Math.toRadians(90));
+        super(1280, 720, "Cat Like Coding's Clock Project");
+        createContext();
+        Framebuffer.setClearColor(0, .5f, 1);
+        Framebuffer.setDepthTest(true);
+    }
 
-        clock.addChild(clockFace);
-        // Hour indicator components creation
-        Model cube = new Model("models/Cube.obj");
-
-        Vector3f[] positions = {
-                new Vector3f(0, 4, -.25f),// 12
-                new Vector3f(-2, 3.464f, -.25f),// 1
-                new Vector3f(-3.464f, 2, -.25f),// 2
-                new Vector3f(-4, 0, -.25f),// 3
-                new Vector3f(-3.464f, -2, -.25f),// 4
-                new Vector3f(-2, -3.464f, -.25f),// 5
-                new Vector3f(0, -4, -.25f),// 6
-                new Vector3f(2, -3.464f, -.25f),// 7
-                new Vector3f(3.464f, -2, -.25f),// 8
-                new Vector3f(4, 0, -.25f),// 9
-                new Vector3f(3.464f, 2, -.25f),// 10
-                new Vector3f(2, 3.464f, -.25f),// 11
+    public void onCreate() {
+        // Loading resources
+        Shader shader = new Shader(FileUtil.getFileString("shaders/shader.vert"), FileUtil.getFileString("shaders/color_shader.frag"));
+        Mesh cylinder = new StaticMesh("models/Cylinder.obj");
+        Mesh cube = new StaticMesh("models/Cube.obj");
+        // Creating entities that will make use of resources
+        Camera camera = new Camera(getWidth(), getHeight());
+        camera.setFov(45);
+        camera.getComponent(Transform.class).ifPresent(
+                transform -> transform.setPosition(new Vector3f(0, 0, -15))
+        );
+        var renderCallback = new RenderCallback() {
+            @Override
+            public void invoke(Entity self) {
+                var shader = self.getComponent(Shader.class).orElse(null);
+                var transform = self.getComponent(Transform.class).orElse(null);
+                var mesh = self.getComponent(StaticMesh.class).orElse(null);
+                if (mesh == null || transform == null || shader == null) return;
+                shader.setMatrix4f("uProjection", camera.getProjection3D());
+                shader.setMatrix4f("uView", camera.getView());
+                shader.setMatrix4f("uModel", transform.getModelMatrix());
+                shader.setFloat3("color", ((ColoredEntity)self).color);
+                mesh.render();
+            }
         };
-        int rot = 0;
-        // Clock hour indicators
-        for (Vector3f position : positions) {
-            Entity hourIndicator = new ColoredEntity(new Vector3f(73f / 255), cube, shader);
-            hourIndicator.getTransform().setPosition(position);
-            hourIndicator.getTransform().setRoll((float) Math.toRadians(rot));
-            hourIndicator.getTransform().setScale(new Vector3f(.5f, 1, .1f));
+        clock = Entity.create();
+        Entity clockFace = new ColoredEntity(new Vector3f(1), new Transform(new Vector3f(), new Vector3f(90, 0, 0), new Vector3f(10, .2f, 10)), cylinder, shader);
+        clockFace.setRenderCallback(renderCallback);
+        clock.addChild(clockFace);
+        for (int i = 0; i < 12; i++) {
+            Entity hourIndicator =
+                    new ColoredEntity(
+                            new Vector3f(73f / 255),
+                            new Transform(new Vector3f(0, 4, -.25f).rotateZ((float)Math.toRadians(i * 30)), new Vector3f(0, 0, 30 * i), new Vector3f(.5f, 1, .1f)),
+                            cube, shader
+                    );
+            hourIndicator.setRenderCallback(renderCallback);
             clock.addChild(hourIndicator);
-            rot += 30;
         }
 
-        // Clock hands
-        Entity hourArm = new ColoredEntity(new Vector3f(), cube, shader);
-        hourArm.getTransform().setPosition(new Vector3f(0, .75f, -.25f));
-        hourArm.getTransform().setScale(new Vector3f(.3f, 2.5f, .1f));
-        hourArmPivot = new Entity();
+        Entity hourArm = new ColoredEntity(new Vector3f(), new Transform(new Vector3f(0, .75f, -.25f), new Vector3f(), new Vector3f(.3f, 2.5f, .1f)), cube, shader);
+        hourArm.setRenderCallback(renderCallback);
+        Transform hourTransform = new Transform();
+        Entity hourArmPivot = new Entity(hourTransform);
         hourArmPivot.addChild(hourArm);
-        Entity minuteArm = new ColoredEntity(new Vector3f(), cube, shader);
-        minuteArm.getTransform().setPosition(new Vector3f(0, 1, -.35f));
-        minuteArm.getTransform().setScale(new Vector3f(.2f, 4, .1f));
-        minuteArmPivot = new Entity();
+        clock.addChild(hourArmPivot);
+
+        Entity minuteArm = new ColoredEntity(new Vector3f(0, .5f, 0), new Transform(new Vector3f(0, 1, -.35f), new Vector3f(), new Vector3f(.2f, 4, .1f)), cube, shader);
+        minuteArm.setRenderCallback(renderCallback);
+        Transform minuteTransform = new Transform();
+        Entity minuteArmPivot = new Entity(minuteTransform);
         minuteArmPivot.addChild(minuteArm);
-        Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0),cube, shader);
-        secondArm.getTransform().setPosition(new Vector3f(0, 1.25f, -.45f));
-        secondArm.getTransform().setScale(new Vector3f(.1f, 5, .1f));
-        secondArmPivot = new Entity();
+        clock.addChild(minuteArmPivot);
+
+        Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0), new Transform(new Vector3f(0, 1.25f, -.45f), new Vector3f(), new Vector3f(.1f, 5, .1f)), cube, shader);
+        secondArm.setRenderCallback(renderCallback);
+        Transform secondTransform = new Transform();
+        Entity secondArmPivot = new Entity(secondTransform);
         secondArmPivot.addChild(secondArm);
-        clock.addChildren(hourArmPivot, minuteArmPivot, secondArmPivot);
-        Framebuffer.setClearColor(0, 0.5f, 1);
-        Framebuffer.enableDepthTest();
+
+        clock.addChild(secondArmPivot);
+        clock.setUpdateCallback(new UpdateCallback() {
+            public void invoke(Entity self) {
+                Time now = Time.valueOf(LocalTime.now().plusHours(1));
+                double seconds = now.getTime() / 1000.0;
+                double minutes = seconds / 60;
+                double hours = minutes / 60;
+                hourTransform.setRotation(new Vector3f(0,0,(float) (30 * hours)));
+                minuteTransform.setRotation(new Vector3f(0, 0, (float)(6 * minutes)));
+                secondTransform.setRotation(new Vector3f(0, 0, (float)(6 * seconds)));
+            }
+        });
     }
 
-    @Override
-    public void onUpdate(Input input) {
-        if (input.isKeyPressed(Input.KEY_ESCAPE)) quit();
-        Time now = Time.valueOf(LocalTime.now().plusHours(1));
-        double seconds = now.getTime() / 1000.0;
-        double minutes = seconds / 60;
-        double hours = minutes / 60;
-        hourArmPivot.getTransform().setRoll((float) Math.toRadians(30 * hours));
-        minuteArmPivot.getTransform().setRoll((float) Math.toRadians(6 * minutes));
-        secondArmPivot.getTransform().setRoll((float) Math.toRadians(6 * seconds));
+    public void onUpdate() {
+        if (Input.isKeyPressed(Input.KEY_ESCAPE)) quit();
+        clock.updateStack();
     }
 
-    @Override
     public void onRender() {
-        camera.makeActive();
-        clock.render();
-        camera.render();
+        clock.renderStack();
     }
 
-    @Override
     public void onExit() {
-        clock.cleanup();
+        clock.destroyStack();
     }
 
     public static void main(String... args) {
-        CoffeeEngine.run(CatLikeClock.class);
+        CoffeeEngine.run(new CatLikeClock());
     }
 
     private static class ColoredEntity extends Entity {
         private final Vector3f color;
 
-        public ColoredEntity(Vector3f color, Component... components) {
+        ColoredEntity(Vector3f color, Component... components) {
             super(components);
             this.color = color;
-        }
-
-        @Override
-        public void render() {
-            this.getShaderComponent().ifPresent((shader) -> {
-                shader.use();
-                CoffeeEngine.getCurrentActiveCamera().ifPresent((camera) -> {
-                    shader.setProjectionMatrix(camera.getProjection());
-                    shader.setViewMatrix(camera.getView());
-                });
-                shader.setModelMatrix(this.transform.getTransformMatrix());
-                shader.setFloat3("color", color);
-                this.components.values().forEach(Component::render);
-            });
-            this.children.forEach(Entity::render);
         }
     }
 }
