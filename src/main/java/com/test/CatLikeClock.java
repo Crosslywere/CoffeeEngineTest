@@ -35,11 +35,8 @@ public class CatLikeClock extends Application {
         Mesh cylinder = new StaticMesh("models/Cylinder.obj");
         Mesh cube = new StaticMesh("models/Cube.obj");
         // Creating entities that will make use of resources
-        Camera camera = new Camera(getWidth(), getHeight());
+        Camera camera = new Camera(getWidth(), getHeight(), new Transform(new Vector3f(0, 0, -15)));
         camera.setFov(45);
-        camera.getComponent(Transform.class).ifPresent(
-                transform -> transform.setPosition(new Vector3f(0, 0, -15))
-        );
         var renderCallback = new Consumer<Entity>() {
             @Override
             public void accept(Entity self) {
@@ -95,15 +92,18 @@ public class CatLikeClock extends Application {
                 double seconds = now.getTime() / 1000.0;
                 double minutes = seconds / 60;
                 double hours = minutes / 60;
-                hourTransform.setRotation(new Vector3f(0,0,(float) (30 * hours)));
-                minuteTransform.setRotation(new Vector3f(0, 0, (float) (6 * minutes)));
-                secondTransform.setRotation(new Vector3f(0, 0, (float) (6 * seconds)));
+                hourTransform.setRoll((float) (30 * hours));
+                minuteTransform.setRoll((float) (6 * minutes));
+                secondTransform.setRoll((float) (6 * seconds));
             }
         );
     }
 
     public void onUpdate() {
         if (Input.isKeyPressed(Input.KEY_ESCAPE)) quit();
+        if (Input.isKeyJustPressed(Input.KEY_F)) setFullscreen(!isFullscreen());
+        if (Input.isKeyJustPressed(Input.KEY_MINUS)) Framebuffer.setRenderModeLine();
+        if (Input.isKeyJustPressed(Input.KEY_EQUAL)) Framebuffer.setRenderModeFill();
         clock.updateStack();
     }
 
