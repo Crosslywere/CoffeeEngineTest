@@ -1,13 +1,22 @@
 package com.test;
 
-import com.crossly.coffee_engine.component.*;
-import com.crossly.coffee_engine.core.*;
-import com.crossly.coffee_engine.entity.*;
+import com.crossly.coffee_engine.component.Component;
+import com.crossly.coffee_engine.component.Transform;
+import com.crossly.coffee_engine.component.graphics.Framebuffer;
+import com.crossly.coffee_engine.component.graphics.GraphicsShader;
+import com.crossly.coffee_engine.component.graphics.Mesh;
+import com.crossly.coffee_engine.component.graphics.StaticMesh;
+import com.crossly.coffee_engine.core.Application;
+import com.crossly.coffee_engine.core.CoffeeEngine;
+import com.crossly.coffee_engine.core.Input;
+import com.crossly.coffee_engine.entity.Camera;
+import com.crossly.coffee_engine.entity.Entity;
 import com.crossly.util.FileUtil;
 import org.joml.Vector3f;
 
 import java.sql.Time;
 import java.time.LocalTime;
+import java.util.function.Consumer;
 
 public class CatLikeClock extends Application {
 
@@ -17,12 +26,12 @@ public class CatLikeClock extends Application {
         super(1280, 720, "Cat Like Coding's Clock Project");
         createContext();
         Framebuffer.setClearColor(0, .5f, 1);
-        Framebuffer.setDepthTest(true);
+        Framebuffer.setDepthTestEnabled(true);
     }
 
     public void onCreate() {
         // Loading resources
-        Shader shader = new Shader(FileUtil.getFileString("shaders/shader.vert"), FileUtil.getFileString("shaders/color_shader.frag"));
+        GraphicsShader shader = new GraphicsShader(FileUtil.getFileString("shaders/shader.vert"), FileUtil.getFileString("shaders/color_shader.frag"));
         Mesh cylinder = new StaticMesh("models/Cylinder.obj");
         Mesh cube = new StaticMesh("models/Cube.obj");
         // Creating entities that will make use of resources
@@ -31,10 +40,10 @@ public class CatLikeClock extends Application {
         camera.getComponent(Transform.class).ifPresent(
                 transform -> transform.setPosition(new Vector3f(0, 0, -15))
         );
-        var renderCallback = new RenderCallback() {
+        var renderCallback = new Consumer<Entity>() {
             @Override
-            public void invoke(Entity self) {
-                var shader = self.getComponent(Shader.class).orElse(null);
+            public void accept(Entity self) {
+                var shader = self.getComponent(GraphicsShader.class).orElse(null);
                 var transform = self.getComponent(Transform.class).orElse(null);
                 var mesh = self.getComponent(StaticMesh.class).orElse(null);
                 if (mesh == null || transform == null || shader == null) return;
@@ -63,35 +72,34 @@ public class CatLikeClock extends Application {
         Entity hourArm = new ColoredEntity(new Vector3f(), new Transform(new Vector3f(0, .75f, -.25f), new Vector3f(), new Vector3f(.3f, 2.5f, .1f)), cube, shader);
         hourArm.setRenderCallback(renderCallback);
         Transform hourTransform = new Transform();
-        Entity hourArmPivot = new Entity(hourTransform);
+        Entity hourArmPivot = Entity.create(hourTransform);
         hourArmPivot.addChild(hourArm);
         clock.addChild(hourArmPivot);
 
         Entity minuteArm = new ColoredEntity(new Vector3f(0, .5f, 0), new Transform(new Vector3f(0, 1, -.35f), new Vector3f(), new Vector3f(.2f, 4, .1f)), cube, shader);
         minuteArm.setRenderCallback(renderCallback);
         Transform minuteTransform = new Transform();
-        Entity minuteArmPivot = new Entity(minuteTransform);
+        Entity minuteArmPivot = Entity.create(minuteTransform);
         minuteArmPivot.addChild(minuteArm);
         clock.addChild(minuteArmPivot);
 
         Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0), new Transform(new Vector3f(0, 1.25f, -.45f), new Vector3f(), new Vector3f(.1f, 5, .1f)), cube, shader);
         secondArm.setRenderCallback(renderCallback);
         Transform secondTransform = new Transform();
-        Entity secondArmPivot = new Entity(secondTransform);
+        Entity secondArmPivot = Entity.create(secondTransform);
         secondArmPivot.addChild(secondArm);
 
         clock.addChild(secondArmPivot);
-        clock.setUpdateCallback(new UpdateCallback() {
-            public void invoke(Entity self) {
+        clock.setUpdateCallback(self -> {
                 Time now = Time.valueOf(LocalTime.now().plusHours(1));
                 double seconds = now.getTime() / 1000.0;
                 double minutes = seconds / 60;
                 double hours = minutes / 60;
                 hourTransform.setRotation(new Vector3f(0,0,(float) (30 * hours)));
-                minuteTransform.setRotation(new Vector3f(0, 0, (float)(6 * minutes)));
-                secondTransform.setRotation(new Vector3f(0, 0, (float)(6 * seconds)));
+                minuteTransform.setRotation(new Vector3f(0, 0, (float) (6 * minutes)));
+                secondTransform.setRotation(new Vector3f(0, 0, (float) (6 * seconds)));
             }
-        });
+        );
     }
 
     public void onUpdate() {
