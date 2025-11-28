@@ -31,7 +31,8 @@ public class CatLikeClock extends Application {
 
     public void onCreate() {
         // Loading resources
-        GraphicsShader shader = new GraphicsShader(FileUtil.getFileString("shaders/shader.vert"), FileUtil.getFileString("shaders/color_shader.frag"));
+        GraphicsShader shader = new GraphicsShader(FileUtil.getFileString("shaders/shader.vert"),
+                FileUtil.getFileString("shaders/color_shader.frag"));
         Mesh cylinder = new StaticMesh("models/Cylinder.obj");
         Mesh cube = new StaticMesh("models/Cube.obj");
         // Creating entities that will make use of resources
@@ -52,35 +53,41 @@ public class CatLikeClock extends Application {
             }
         };
         clock = Entity.create();
-        Entity clockFace = new ColoredEntity(new Vector3f(1), new Transform(new Vector3f(), new Vector3f(90, 0, 0), new Vector3f(10, .2f, 10)), cylinder, shader);
+        Entity clockFace = new ColoredEntity(new Vector3f(1),
+                new Transform(new Vector3f(), new Vector3f(90, 0, 0), new Vector3f(10, .2f, 10)), cylinder, shader);
         clockFace.setRenderCallback(renderCallback);
         clock.addChild(clockFace);
         for (int i = 0; i < 12; i++) {
             Entity hourIndicator =
-                    new ColoredEntity(
-                            new Vector3f(73f / 255),
-                            new Transform(new Vector3f(0, 4, -.25f).rotateZ((float)Math.toRadians(i * 30)), new Vector3f(0, 0, 30 * i), new Vector3f(.5f, 1, .1f)),
-                            cube, shader
-                    );
+                new ColoredEntity(
+                    new Vector3f(73f / 255),
+                    new Transform(new Vector3f(0, 4, -.25f).rotateZ((float) Math.toRadians(i * 30)),
+                            new Vector3f(0, 0, 30 * i), new Vector3f(.5f, 1, .1f)),
+                    cube, shader
+                );
             hourIndicator.setRenderCallback(renderCallback);
             clock.addChild(hourIndicator);
         }
 
-        Entity hourArm = new ColoredEntity(new Vector3f(), new Transform(new Vector3f(0, .75f, -.25f), new Vector3f(), new Vector3f(.3f, 2.5f, .1f)), cube, shader);
+        Entity hourArm = new ColoredEntity(new Vector3f(),
+                new Transform(new Vector3f(0, .75f, -.25f), new Vector3f(), new Vector3f(.3f, 2.5f, .1f)), cube,
+                shader);
         hourArm.setRenderCallback(renderCallback);
         Transform hourTransform = new Transform();
         Entity hourArmPivot = Entity.create(hourTransform);
         hourArmPivot.addChild(hourArm);
         clock.addChild(hourArmPivot);
 
-        Entity minuteArm = new ColoredEntity(new Vector3f(0, .5f, 0), new Transform(new Vector3f(0, 1, -.35f), new Vector3f(), new Vector3f(.2f, 4, .1f)), cube, shader);
+        Entity minuteArm = new ColoredEntity(new Vector3f(0, .5f, 0),
+                new Transform(new Vector3f(0, 1, -.35f), new Vector3f(), new Vector3f(.2f, 4, .1f)), cube, shader);
         minuteArm.setRenderCallback(renderCallback);
         Transform minuteTransform = new Transform();
         Entity minuteArmPivot = Entity.create(minuteTransform);
         minuteArmPivot.addChild(minuteArm);
         clock.addChild(minuteArmPivot);
 
-        Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0), new Transform(new Vector3f(0, 1.25f, -.45f), new Vector3f(), new Vector3f(.1f, 5, .1f)), cube, shader);
+        Entity secondArm = new ColoredEntity(new Vector3f(1, 0, 0),
+                new Transform(new Vector3f(0, 1.25f, -.45f), new Vector3f(), new Vector3f(.1f, 5, .1f)), cube, shader);
         secondArm.setRenderCallback(renderCallback);
         Transform secondTransform = new Transform();
         Entity secondArmPivot = Entity.create(secondTransform);
